@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Global EV Market Pulse — 2026 Edition</title>
+<meta name="description" content="World electric-vehicle production, sales, trade and forecast intelligence, built on the IEA Global EV Outlook 2026.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M13 2 4 14h6l-1 8 9-12h-6l1-8Z' fill='%238FD13F' stroke='%230B6E7F'/%3E%3C/svg%3E">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Global EV Market Pulse — 2026 Edition">
+<meta property="og:description" content="Who's actually winning the global EV race — country-by-country sales, production, battery supply chains and the road to 2035, built on the IEA Global EV Outlook 2026.">
+<meta property="og:image" content="docs/screenshots/dashboard-preview.png">
+<meta name="twitter:card" content="summary_large_image">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
+<script src="data/ev_data.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0E2438;
+    --ink:#16212B;
+    --petrol:#0B6E7F;
+    --petrol-dark:#084F5C;
+    --charge:#8FD13F;
+    --amber:#E2A63D;
+    --coral:#D9634B;
+    --grey:#6B7480;
+    --line:#E4E9ED;
+    --panel:#F6F8F9;
+    --white:#FFFFFF;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--white);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{
+    font-family:'Space Grotesk',sans-serif;
+    color:var(--navy);
+    margin:0;
+  }
+  a{color:var(--petrol);}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 28px;}
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    position:sticky;top:0;z-index:50;
+    background:rgba(255,255,255,.92);
+    backdrop-filter:saturate(180%) blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  .topbar .wrap{display:flex;align-items:center;justify-content:space-between;height:60px;}
+  .brand{display:flex;align-items:center;gap:10px;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;color:var(--navy);}
+  .brand .bolt{width:20px;height:20px;flex:none;}
+  nav.tabs{display:flex;gap:2px;overflow-x:auto;}
+  nav.tabs a{
+    white-space:nowrap;
+    font-size:13px;font-weight:500;color:var(--grey);text-decoration:none;
+    padding:8px 12px;border-radius:7px;
+  }
+  nav.tabs a:hover{color:var(--navy);background:var(--panel);}
+  nav.tabs a.active{color:var(--petrol-dark);background:#E7F3F1;font-weight:600;}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:56px 0 34px;border-bottom:1px solid var(--line);}
+  .hero .eyebrow{font-size:13px;color:var(--petrol);font-weight:600;margin-bottom:14px;}
+  .hero h1{font-size:40px;line-height:1.12;font-weight:700;max-width:760px;}
+  .hero p.lede{font-size:16px;color:var(--grey);max-width:620px;margin-top:16px;line-height:1.55;}
+  .hero .meta{margin-top:20px;font-size:12.5px;color:var(--grey);}
+  .hero .meta a{color:var(--petrol);text-decoration:none;border-bottom:1px solid rgba(11,110,127,.35);}
+
+  /* ---------- KPI band ---------- */
+  .kpis{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;
+    margin-top:34px;
+  }
+  .kpi{background:var(--white);padding:20px 18px;}
+  .kpi .icon{width:26px;height:26px;margin-bottom:10px;color:var(--petrol);}
+  .kpi.accent .icon{color:var(--charge-dark, var(--petrol));}
+  .kpi .label{font-size:12px;color:var(--grey);margin-bottom:8px;}
+  .kpi .value{font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:700;color:var(--navy);}
+  .kpi .sub{font-size:11.5px;color:var(--grey);margin-top:6px;}
+  .kpi.accent .value{color:var(--petrol);}
+
+  @media(max-width:820px){ .kpis{grid-template-columns:repeat(2,1fr);} .hero h1{font-size:30px;} }
+
+  /* ---------- Sections ---------- */
+  section{padding:52px 0;border-bottom:1px solid var(--line);}
+  section:last-of-type{border-bottom:none;}
+  .section-head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:26px;flex-wrap:wrap;}
+  .section-head h2{font-size:24px;font-weight:600;}
+  .section-head p{font-size:14px;color:var(--grey);margin-top:6px;max-width:560px;}
+  .tag{
+    display:inline-block;font-size:11px;font-weight:600;color:var(--petrol-dark);
+    background:#E7F3F1;padding:4px 10px;border-radius:20px;margin-bottom:10px;
+  }
+
+  .grid-2{display:grid;grid-template-columns:1.3fr 1fr;gap:28px;}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+  @media(max-width:900px){ .grid-2{grid-template-columns:1fr;} .grid-3{grid-template-columns:1fr;} }
+
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px;}
+  .panel h3{font-size:14px;font-weight:600;margin-bottom:14px;color:var(--navy);}
+  .chart-box{position:relative;height:340px;}
+  .chart-box.tall{height:420px;}
+  .chart-box.short{height:230px;}
+
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  thead th{
+    text-align:left;font-size:11px;text-transform:none;color:var(--grey);font-weight:600;
+    border-bottom:1px solid var(--line);padding:8px 10px;position:sticky;top:0;background:var(--white);
+  }
+  tbody td{padding:8px 10px;border-bottom:1px solid var(--line);color:var(--ink);}
+  tbody tr:hover{background:var(--panel);}
+  .num{text-align:right;font-variant-numeric:tabular-nums;}
+  .rank{color:var(--grey);font-variant-numeric:tabular-nums;width:26px;}
+  .country-cell{font-weight:600;color:var(--navy);}
+  .table-scroll{max-height:460px;overflow-y:auto;border:1px solid var(--line);border-radius:var(--radius);}
+  th[data-sort]{cursor:pointer;user-select:none;white-space:nowrap;}
+  th[data-sort]:hover{color:var(--navy);}
+  th[data-sort]::after{content:"";display:inline-block;width:0;height:0;margin-left:4px;vertical-align:middle;
+    border-left:3px solid transparent;border-right:3px solid transparent;opacity:.35;}
+  th[data-sort].sort-asc::after{border-bottom:4px solid var(--petrol);opacity:1;}
+  th[data-sort].sort-desc::after{border-top:4px solid var(--petrol);opacity:1;}
+  .table-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;}
+  .table-toolbar h3{margin-bottom:0;}
+  .search-input{
+    font-family:'Inter',sans-serif;font-size:12.5px;padding:7px 12px;border:1px solid var(--line);
+    border-radius:7px;background:var(--white);color:var(--ink);width:180px;outline:none;
+  }
+  .search-input:focus{border-color:var(--petrol);}
+  .no-results{padding:24px;text-align:center;color:var(--grey);font-size:13px;}
+
+  .bar-mini{height:6px;border-radius:4px;background:var(--line);overflow:hidden;margin-top:4px;width:100%;}
+  .bar-mini span{display:block;height:100%;background:var(--petrol);}
+
+  .fact-list{list-style:none;margin:0;padding:0;}
+  .fact-list li{
+    display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px dashed var(--line);
+    font-size:13.5px;
+  }
+  .fact-list li:last-child{border-bottom:none;}
+  .fact-list .fv{font-weight:700;color:var(--navy);font-family:'Space Grotesk',sans-serif;white-space:nowrap;}
+  .fact-list .fl{color:var(--ink);}
+  .fact-list .fn{display:block;font-size:11.5px;color:var(--grey);margin-top:2px;}
+
+  .badge{
+    display:inline-block;font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:5px;margin-left:6px;
+  }
+  .badge.est{background:#FBEFE1;color:#8A5A15;}
+  .badge.forecast{background:#EAF1FB;color:#2B5A9E;}
+
+  footer{padding:38px 0 60px;}
+  footer .foot-grid{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;font-size:12.5px;color:var(--grey);}
+  footer a{color:var(--petrol);text-decoration:none;}
+  .disclaimer{margin-top:18px;font-size:11.5px;color:var(--grey);max-width:760px;line-height:1.6;}
+
+  .maker-card{
+    display:flex;flex-direction:row;align-items:center;text-align:left;gap:14px;
+    margin:28px 0 0;padding:14px 20px;
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;max-width:480px;
+  }
+  .maker-avatar{width:50px;height:50px;border-radius:50%;object-fit:cover;flex:none;border:2px solid var(--charge);}
+  .maker-info{display:flex;flex-direction:column;gap:1px;}
+  .maker-name{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;color:var(--navy);}
+  .maker-role{font-size:12px;color:var(--grey);max-width:360px;line-height:1.4;}
+  .maker-link{font-size:12px;color:var(--petrol);text-decoration:none;font-weight:600;margin-top:2px;}
+  .maker-link:hover{text-decoration:underline;}
+
+  .hidden{display:none !important;}
+  .error-box{background:#FBEAEA;border:1px solid #F3C6C6;color:#9B2C2C;padding:16px 18px;border-radius:var(--radius);font-size:13.5px;margin-bottom:20px;}
+  .footnote{font-size:11.5px;color:var(--grey);margin-top:16px;font-style:italic;}
+  .chart-legend-mini{
+    display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:center;margin-top:10px;padding:0 8px;
+  }
+  .chart-legend-mini .swatch-item{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;color:var(--ink);margin:3px 7px;}
+  .chart-legend-mini .dot{width:9px;height:9px;border-radius:50%;flex:none;}
+
+  /* ---------- World map ---------- */
+  .map-toggle{display:flex;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:3px;}
+  .map-btn{
+    border:none;background:transparent;font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;
+    color:var(--grey);padding:7px 12px;border-radius:6px;cursor:pointer;transition:all .15s ease;
+  }
+  .map-btn:hover{color:var(--navy);}
+  .map-btn.active{background:var(--white);color:var(--petrol-dark);box-shadow:0 1px 2px rgba(0,0,0,.08);}
+  #map-box{position:relative;height:460px;}
+  #worldmap-svg{display:block;cursor:grab;}
+  #worldmap-svg:active{cursor:grabbing;}
+  .country-shape{stroke:#FFFFFF;stroke-width:0.5;cursor:pointer;transition:opacity .15s ease;}
+  .country-shape:hover{opacity:0.82;stroke-width:1.2;}
+  .country-shape.no-data{fill:#EDF0F2;cursor:default;}
+  .country-shape.no-data:hover{opacity:1;}
+  .map-tooltip{
+    position:absolute;pointer-events:none;background:var(--navy);color:#fff;padding:10px 13px;border-radius:8px;
+    font-size:12.5px;line-height:1.5;box-shadow:0 8px 20px rgba(0,0,0,.18);max-width:220px;z-index:10;
+  }
+  .map-tooltip b{font-family:'Space Grotesk',sans-serif;font-size:13.5px;}
+  .map-tooltip .tt-row{display:flex;justify-content:space-between;gap:14px;color:#C9D5DA;}
+  .map-tooltip .tt-row b{color:#fff;font-family:'Inter',sans-serif;font-size:12.5px;}
+  .map-status{text-align:center;color:var(--grey);font-size:13.5px;padding:60px 0;}
+  .map-legend{display:flex;align-items:center;justify-content:center;gap:10px;font-size:11.5px;color:var(--grey);margin-top:6px;padding:0 12px;flex-wrap:wrap;}
+  .map-legend .gradient-bar{height:10px;border-radius:4px;width:200px;}
+  .map-zoom-controls{display:flex;gap:6px;align-items:center;}
+  .zoom-btn{
+    border:1px solid var(--line);background:var(--white);color:var(--grey);font-size:11.5px;font-weight:600;
+    padding:5px 10px;border-radius:6px;cursor:pointer;
+  }
+  .zoom-btn:hover{color:var(--navy);border-color:var(--petrol);}
+  .map-hint{text-align:center;font-size:11px;color:var(--grey);margin-top:8px;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap">
+    <div class="brand">
+      <svg class="bolt" viewBox="0 0 24 24" fill="none"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" fill="#8FD13F" stroke="#0B6E7F" stroke-width="1"/></svg>
+      Global EV Market Pulse
+    </div>
+    <nav class="tabs">
+      <a href="#worldmap">World Map</a>
+      <a href="#leaderboard">Countries</a>
+      <a href="#segmentation">Segmentation</a>
+      <a href="#trend">Trend</a>
+      <a href="#manufacturing">Manufacturing</a>
+      <a href="#battery">Batteries</a>
+      <a href="#charging">Charging</a>
+      <a href="#affordability">Affordability</a>
+      <a href="#recycling">Recycling</a>
+      <a href="#forecast">2035 Outlook</a>
+      <a href="#impact">Oil &amp; Grid</a>
+      <a href="#beyond">Trucks &amp; 2/3-W</a>
+      <a href="#sources">Sources</a>
+    </nav>
+  </div>
+</div>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">World electric-vehicle intelligence — 2026 edition</div>
+    <h1>Which countries are actually winning the EV race — and by how much.</h1>
+    <p class="lede">A world-level view of electric-car production, sales, trade flows, battery supply chains
+      and the road to 2035 — built entirely on figures published in the IEA's <em>Global EV Outlook 2026</em>.</p>
+    <div class="meta">Data: <a href="https://www.iea.org/reports/global-ev-outlook-2026" target="_blank" rel="noopener">IEA, Global EV Outlook 2026</a> (CC BY 4.0) · Workbook: <a href="data/EV_Global_Outlook_2026.xlsx">EV_Global_Outlook_2026.xlsx</a> · Independent portfolio project, not affiliated with the IEA</div>
+
+    <div class="kpis" id="kpi-band">
+      <div class="kpi">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 13l2-6a2 2 0 0 1 2-1h10a2 2 0 0 1 2 1l2 6"/><rect x="2" y="13" width="20" height="6" rx="1.5"/><circle cx="7" cy="19" r="1.6" fill="currentColor" stroke="none"/><circle cx="17" cy="19" r="1.6" fill="currentColor" stroke="none"/></svg>
+        <div class="label">Global EV sales, 2025</div><div class="value">20.4M</div><div class="sub">+20% year-on-year</div>
+      </div>
+      <div class="kpi accent">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
+        <div class="label">Global sales share</div><div class="value">25%</div><div class="sub">1 in 4 new cars sold worldwide</div>
+      </div>
+      <div class="kpi">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 21V4l14 4-14 4"/></svg>
+        <div class="label">China's share of world sales</div><div class="value">≈55%</div><div class="sub">13M+ cars, world's largest market</div>
+      </div>
+      <div class="kpi accent">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 17l5-5 4 4 8-9"/><path d="M14 7h6v6"/></svg>
+        <div class="label">EV fleet by 2035 (forecast)</div><div class="value">510M</div><div class="sub">≈6× today, IEA no-new-policy case</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div id="load-error" class="error-box hidden">
+    Couldn't find the dashboard data. Make sure <code>data/ev_data.js</code> sits next to
+    <code>index.html</code> (it ships together in the repo/zip) — if you moved just this
+    HTML file on its own, put it back next to its <code>data/</code> folder and reload.
+  </div>
+
+  <div id="content">
+
+    <!-- ============ WORLD MAP ============ -->
+    <section id="worldmap">
+      <div class="section-head">
+        <div>
+          <div class="tag">Interactive world map</div>
+          <h2>The global EV race, country by country</h2>
+          <p>Hover any shaded country for its 2025 figures. Switch metric to compare who sells the most EVs,
+            who has the highest adoption rate, and who is growing fastest.</p>
+        </div>
+        <div class="map-toggle" id="map-toggle">
+          <button class="map-btn active" data-metric="share">Sales share</button>
+          <button class="map-btn" data-metric="sales">Sales volume</button>
+          <button class="map-btn" data-metric="growth">YoY growth</button>
+        </div>
+      </div>
+      <div class="panel" style="padding:8px 8px 18px;">
+        <div id="map-loading" class="map-status">Loading world map…</div>
+        <div id="map-error" class="map-status hidden">Map data needs an internet connection to load (fetches a public world-atlas file) — the rest of the dashboard works fully offline.</div>
+        <div class="chart-box tall" id="map-box" style="display:none;">
+          <svg id="worldmap-svg" width="100%" height="100%" viewBox="0 0 960 500" preserveAspectRatio="xMidYMid meet"></svg>
+          <div id="map-tooltip" class="map-tooltip hidden"></div>
+        </div>
+        <div class="map-legend" id="map-legend"></div>
+        <p class="map-hint">Scroll or pinch to zoom, drag to pan.</p>
+      </div>
+    </section>
+
+    <!-- ============ LEADERBOARD ============ -->
+    <section id="leaderboard">
+      <div class="section-head">
+        <div>
+          <div class="tag">Country leaderboard</div>
+          <h2>Who's actually selling and driving the most EVs</h2>
+          <p>Ranked by 2025 electric-car sales where the report gives an absolute figure; sales share and
+            year-on-year growth fill in the picture for every other market.</p>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="panel">
+          <h3>Top markets by 2025 sales volume</h3>
+          <div class="chart-box tall"><canvas id="chartLeaderboard"></canvas></div>
+        </div>
+        <div class="panel">
+          <div class="table-toolbar">
+            <h3>Full country table</h3>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input type="search" id="country-search" class="search-input" placeholder="Search country or region…">
+              <button type="button" id="csv-export" class="zoom-btn">⤓ CSV</button>
+            </div>
+          </div>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th class="rank">#</th>
+                  <th data-sort="country">Country</th>
+                  <th data-sort="region">Region</th>
+                  <th class="num" data-sort="sales">2025 sales</th>
+                  <th class="num sort-desc" data-sort="share">Share</th>
+                  <th class="num" data-sort="growth">YoY</th>
+                </tr>
+              </thead>
+              <tbody id="country-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SEGMENTATION ============ -->
+    <section id="segmentation">
+      <div class="section-head">
+        <div>
+          <div class="tag">Market segmentation</div>
+          <h2>Slicing the 2025 market three ways</h2>
+          <p>By powertrain (battery-electric vs. plug-in hybrid), by where the manufacturer is headquartered,
+            and by which region actually bought the cars.</p>
+        </div>
+      </div>
+      <div class="grid-3">
+        <div class="panel">
+          <h3>Powertrain mix</h3>
+          <div class="chart-box short"><canvas id="chartPowertrain"></canvas></div>
+        </div>
+        <div class="panel">
+          <h3>Manufacturer origin</h3>
+          <div class="chart-box short"><canvas id="chartOrigin"></canvas></div>
+        </div>
+        <div class="panel">
+          <h3>Regional share of global sales</h3>
+          <div class="chart-box short"><canvas id="chartRegionSplit"></canvas></div>
+          <div class="chart-legend-mini" id="region-split-legend"></div>
+        </div>
+      </div>
+      <p class="footnote" id="segmentation-note"></p>
+    </section>
+
+    <!-- ============ TREND ============ -->
+    <section id="trend">
+      <div class="section-head">
+        <div>
+          <div class="tag">Global trend, 2020–2026</div>
+          <h2>Five straight years of ~3.5 million more sales, every year</h2>
+          <p>2025 crossed 20 million units for the first time; the IEA expects 23 million in 2026 — 28% of every
+            new car sold worldwide. <span class="badge est">2020–2024 reconstructed</span></p>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="panel">
+          <h3>Global electric-car sales (million units)</h3>
+          <div class="chart-box"><canvas id="chartTrendSales"></canvas></div>
+        </div>
+        <div class="panel">
+          <h3>Global sales share of the total car market</h3>
+          <div class="chart-box"><canvas id="chartTrendShare"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ MANUFACTURING ============ -->
+    <section id="manufacturing">
+      <div class="section-head">
+        <div>
+          <div class="tag">Manufacturing &amp; trade</div>
+          <h2>Nearly every fourth EV built in 2025 crossed a border</h2>
+          <p>Almost 22 million electric cars were produced globally in 2025 — and China alone made roughly
+            three-quarters of them.</p>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="panel">
+          <h3>Share of global EV production, 2025</h3>
+          <div class="chart-box short"><canvas id="chartProduction"></canvas></div>
+        </div>
+        <div class="panel">
+          <h3>Trade facts, 2025</h3>
+          <ul class="fact-list" id="trade-facts"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ BATTERY ============ -->
+    <section id="battery">
+      <div class="section-head">
+        <div>
+          <div class="tag">Battery supply chain</div>
+          <h2>The battery race is even more concentrated than the car race</h2>
+          <p>Over 80% of the world's battery cells are produced in China — and nearly all the rest come from
+            Korea or Japan.</p>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="panel">
+          <h3>Share of global battery-cell production, 2025</h3>
+          <div class="chart-box short"><canvas id="chartBattery"></canvas></div>
+        </div>
+        <div class="panel">
+          <h3>Why it matters</h3>
+          <p style="font-size:13.5px;color:var(--ink);line-height:1.7;">
+            China accounted for over 80% of battery-cell production in 2025, and an even higher share of the
+            active materials that go into EV batteries. Nearly all battery cells worldwide are supplied by
+            companies headquartered in China, Korea or Japan — a concentration that shapes pricing, trade
+            policy and industrial strategy across every other market in this dashboard.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CHARGING INFRASTRUCTURE ============ -->
+    <section id="charging">
+      <div class="section-head">
+        <div>
+          <div class="tag">Charging infrastructure</div>
+          <h2>7 million+ public chargers — and China built most of them</h2>
+          <p>Most EV owners charge privately, but public charging determines whether an EV works for
+            everyone else. China alone accounts for more than 65% of the world's public charging points.</p>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="panel">
+          <h3>Public charging points by country, 2025</h3>
+          <div class="chart-box tall"><canvas id="chartCharging"></canvas></div>
+        </div>
+        <div class="panel">
+          <h3>Global facts</h3>
+          <ul class="fact-list" id="charging-facts"></ul>
+        </div>
+      </div>
+      <div class="panel" style="margin-top:20px;">
+        <h3>Electric LDVs per public charging point — lower means better public-charging access</h3>
+        <div class="chart-box short"><canvas id="chartEvPerCharger"></canvas></div>
+      </div>
+      <p class="footnote" id="charging-note"></p>
+    </section>
+
+    <!-- ============ AFFORDABILITY ============ -->
+    <section id="affordability">
+      <div class="section-head">
+        <div>
+          <div class="tag">Cost &amp; affordability</div>
+          <h2>Going electric still saves money at home — even more so with pricier oil</h2>
+          <p>Home-charged BEVs have saved owners USD 550-1,000 a year compared to gasoline cars since 2020 —
+            and a lot more since the 2026 oil-price spike.</p>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="panel">
+          <h3>Annual BEV-vs-ICE running-cost saving, 2025</h3>
+          <div class="chart-box short"><canvas id="chartAffordability"></canvas></div>
+        </div>
+        <div class="panel">
+          <h3>Affordability facts</h3>
+          <ul class="fact-list" id="affordability-facts"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ BATTERY RECYCLING ============ -->
+    <section id="recycling">
+      <div class="section-head">
+        <div>
+          <div class="tag">Battery recycling &amp; second-life <span class="badge est">non-IEA sources</span></div>
+          <h2>The recycling wave hasn't hit yet — but it's coming fast</h2>
+          <p>Most EVs on the road today are too young to be recycled. That changes fast after 2030, and EU
+            law already sets hard recycled-content rules for the batteries built to replace them.
+            <em>This section uses S&amp;P Global Mobility, Circular Energy Storage and EU regulation text —
+            not the IEA report — see the note below.</em></p>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="panel">
+          <h3>Global end-of-life battery availability (GWh)</h3>
+          <div class="chart-box short"><canvas id="chartEol"></canvas></div>
+        </div>
+        <div class="panel">
+          <h3>Recycling &amp; second-life facts</h3>
+          <ul class="fact-list" id="recycling-facts"></ul>
+        </div>
+      </div>
+      <div class="grid-2" style="margin-top:20px;">
+        <div class="panel">
+          <h3>EU minimum recycled content in new batteries</h3>
+          <div class="chart-box short"><canvas id="chartEuContent"></canvas></div>
+        </div>
+        <div class="panel">
+          <h3>EU material recovery targets from waste batteries</h3>
+          <div class="chart-box short"><canvas id="chartEuRecovery"></canvas></div>
+        </div>
+      </div>
+      <p class="footnote" id="recycling-note"></p>
+    </section>
+
+    <!-- ============ FORECAST ============ -->
+    <section id="forecast">
+      <div class="section-head">
+        <div>
+          <div class="tag">Outlook to 2035 <span class="badge forecast">IEA scenario</span></div>
+          <h2>By 2035, EVs could be the default car almost everywhere</h2>
+          <p>Under the IEA's exploratory scenarios, global sales share roughly doubles by 2035 — and China,
+            the EU and Viet Nam are each projected to cross 80–90%.</p>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>2025 vs 2035 forecast sales share, by market</h3>
+        <div class="chart-box"><canvas id="chartForecast"></canvas></div>
+      </div>
+    </section>
+
+    <!-- ============ IMPACT ============ -->
+    <section id="impact">
+      <div class="section-head">
+        <div>
+          <div class="tag">Oil &amp; electricity impact</div>
+          <h2>Energy security and grid implications</h2>
+          <p>Every EV on the road displaces oil demand and adds electricity demand — at very different rates
+            depending on the market.</p>
+        </div>
+      </div>
+      <div class="panel">
+        <ul class="fact-list" id="impact-facts"></ul>
+      </div>
+    </section>
+
+    <!-- ============ BEYOND CARS ============ -->
+    <section id="beyond">
+      <div class="section-head">
+        <div>
+          <div class="tag">Beyond passenger cars</div>
+          <h2>Trucks, and two- and three-wheelers</h2>
+          <p>China's electric-truck boom and Asia's two-wheeler electrification are reshaping road transport
+            well outside the passenger-car headlines.</p>
+        </div>
+      </div>
+      <div class="panel">
+        <ul class="fact-list" id="beyond-facts"></ul>
+      </div>
+    </section>
+
+    <!-- ============ SOURCES ============ -->
+    <section id="sources">
+      <div class="section-head">
+        <div>
+          <div class="tag">Methodology &amp; sources</div>
+          <h2>Where every number comes from</h2>
+          <p>This dashboard is generated by a Python script (<code>data/generate_workbook.py</code>) straight
+            from figures published in the report below, and ships both as this dashboard's data file and as
+            the downloadable Excel workbook.</p>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="panel">
+          <h3>Primary source</h3>
+          <ul class="fact-list" id="sources-list"></ul>
+        </div>
+        <div class="panel">
+          <h3>Notes on estimates</h3>
+          <p style="font-size:13px;color:var(--ink);line-height:1.7;">
+            Figures marked <span class="badge est">estimate</span> in the workbook are back-calculated from a
+            share the report states applied to a reported regional total (for example, "UAE ≈ 50% of the
+            Middle East's ~75,000 2025 sales"). 2020–2024 in the global trend chart are reconstructed from the
+            report's stated pattern of roughly 3.5 million additional sales every year since 2021, anchored to
+            the confirmed 2025 and 2026 figures. Every other number is stated directly in the report.
+          </p>
+        </div>
+      </div>
+      <div class="panel" style="margin-top:20px;">
+        <h3>Recycling &amp; second-life section — supplementary sources (not the IEA report)</h3>
+        <ul class="fact-list" id="recycling-sources-list"></ul>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>Global EV Market Pulse — a data portfolio project by Milad Shabani.</div>
+      <div><a href="https://www.iea.org/reports/global-ev-outlook-2026" target="_blank" rel="noopener">IEA Global EV Outlook 2026 →</a></div>
+    </div>
+
+    <div class="maker-card">
+      <img src="assets/avatar.png" alt="Milad Shabani" class="maker-avatar">
+      <div class="maker-info">
+        <div class="maker-name">Milad Shabani</div>
+        <div class="maker-role">BI Engineer building data &amp; analytics portfolio projects with Power BI, SQL Server and Python.</div>
+        <a class="maker-link" href="https://miladshabani.ir/P1/" target="_blank" rel="noopener">miladshabani.ir/P1</a>
+      </div>
+    </div>
+
+    <div class="disclaimer">
+      Built from publicly available data published by the International Energy Agency (IEA), Global EV Outlook 2026,
+      licensed under CC BY 4.0. This is an independent, unofficial visualisation for portfolio purposes and is not
+      produced, reviewed or endorsed by the IEA. <span id="data-generated"></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+const COLORS = { petrol:"#0B6E7F", petrolLight:"#5FA9B4", charge:"#8FD13F", amber:"#E2A63D", coral:"#D9634B", grey:"#B9C2C9", navy:"#0E2438" };
+Chart.defaults.font.family = "Inter, sans-serif";
+Chart.defaults.color = "#6B7480";
+Chart.defaults.borderColor = "#E4E9ED";
+
+function fmtInt(n){ return n===null||n===undefined ? "—" : Math.round(n).toLocaleString("en-US"); }
+function fmtPct(n){ return n===null||n===undefined ? "—" : n.toFixed(1)+"%"; }
+function fmtSigned(n){ return n===null||n===undefined ? "—" : (n>0? "+":"")+n.toFixed(0)+"%"; }
+function fmtUnits(n){ return n>=1e6 ? (n/1e6).toFixed(1).replace(/\.0$/,"")+"M" : n>=1e3 ? (n/1e3).toFixed(0)+"k" : String(n); }
+
+function init(){
+  const D = window.EV_DATA;
+  if(!D){
+    document.getElementById("load-error").classList.remove("hidden");
+    return;
+  }
+  buildLeaderboard(D);
+  buildSegmentation(D);
+  buildTrend(D);
+  buildManufacturing(D);
+  buildBattery(D);
+  buildCharging(D);
+  buildAffordability(D);
+  buildForecast(D);
+  buildImpact(D);
+  buildBeyond(D);
+  buildRecycling(D);
+  buildSources(D);
+  buildWorldMap(D); // isolated try/catch inside — never blocks the rest of the page
+  setupScrollSpy();
+  const genEl = document.getElementById("data-generated");
+  if(genEl && D.generated) genEl.textContent = `Data workbook generated ${D.generated}.`;
+}
+
+function setupScrollSpy(){
+  const links = Array.from(document.querySelectorAll("nav.tabs a"));
+  const sections = links
+    .map(a => document.querySelector(a.getAttribute("href")))
+    .filter(Boolean);
+  if(!sections.length || !("IntersectionObserver" in window)) return;
+  const byId = {};
+  links.forEach(a => byId[a.getAttribute("href").slice(1)] = a);
+  const observer = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        links.forEach(a=>a.classList.remove("active"));
+        const link = byId[entry.target.id];
+        if(link) link.classList.add("active");
+      }
+    });
+  }, { rootMargin: "-40% 0px -55% 0px", threshold: 0 });
+  sections.forEach(s => observer.observe(s));
+}
+
+let allCountries = [];
+let tableSort = { key: "share", dir: "desc" };
+
+function buildLeaderboard(D){
+  allCountries = D.countries;
+
+  const withSales = allCountries.filter(c=>c.sales!==null).slice(0,12);
+  new Chart(document.getElementById("chartLeaderboard"), {
+    type:"bar",
+    data:{ labels: withSales.map(c=>c.country), datasets:[{
+      label:"2025 sales (units)",
+      data: withSales.map(c=>c.sales),
+      backgroundColor: withSales.map(c=> c.country==="China" ? COLORS.coral : COLORS.petrol),
+      borderRadius:4, maxBarThickness:22
+    }]},
+    options:{ indexAxis:"y", responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:(ctx)=> " "+fmtInt(ctx.parsed.x)+" cars"}} },
+      scales:{ x:{ ticks:{ callback:(v)=> fmtUnits(v) }, grid:{color:"#EEF1F3"} }, y:{ grid:{display:false} } }
+    }
+  });
+
+  renderTable();
+
+  document.querySelectorAll("th[data-sort]").forEach(th=>{
+    th.addEventListener("click", ()=>{
+      const key = th.dataset.sort;
+      if(tableSort.key === key){
+        tableSort.dir = tableSort.dir === "asc" ? "desc" : "asc";
+      } else {
+        tableSort = { key, dir: (key==="country"||key==="region") ? "asc" : "desc" };
+      }
+      document.querySelectorAll("th[data-sort]").forEach(t=>t.classList.remove("sort-asc","sort-desc"));
+      th.classList.add(tableSort.dir === "asc" ? "sort-asc" : "sort-desc");
+      renderTable();
+    });
+  });
+
+  const searchInput = document.getElementById("country-search");
+  searchInput.addEventListener("input", ()=> renderTable());
+
+  document.getElementById("csv-export").addEventListener("click", exportVisibleTableAsCsv);
+}
+
+function exportVisibleTableAsCsv(){
+  const rows = Array.from(document.querySelectorAll("#country-table-body tr"));
+  const header = ["Rank","Country","Region","2025 Sales","Sales Share (%)","YoY Growth (%)"];
+  const lines = [header.join(",")];
+  rows.forEach(tr=>{
+    const cells = Array.from(tr.children).map(td => {
+      let text = td.textContent.replace(/\s+/g," ").trim();
+      if(text.includes(",")) text = `"${text}"`;
+      return text;
+    });
+    if(cells.length === header.length) lines.push(cells.join(","));
+  });
+  const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "global-ev-market-pulse-countries.csv";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function renderTable(){
+  const q = (document.getElementById("country-search").value || "").trim().toLowerCase();
+  let rows = allCountries.filter(c =>
+    !q || c.country.toLowerCase().includes(q) || c.region.toLowerCase().includes(q)
+  );
+
+  const { key, dir } = tableSort;
+  const mul = dir === "asc" ? 1 : -1;
+  rows = rows.slice().sort((a,b)=>{
+    let av = a[key], bv = b[key];
+    if(av === null || av === undefined) av = (typeof bv === "string") ? "" : -Infinity;
+    if(bv === null || bv === undefined) bv = (typeof av === "string") ? "" : -Infinity;
+    if(typeof av === "string") return av.localeCompare(bv) * mul;
+    return (av - bv) * mul;
+  });
+
+  const tbody = document.getElementById("country-table-body");
+  if(!rows.length){
+    tbody.innerHTML = `<tr><td colspan="6" class="no-results">No countries match "${q}".</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.map((c,i)=>`<tr>
+      <td class="rank">${i+1}</td>
+      <td class="country-cell">${c.country}${c.is_estimate? ' <span class="badge est">est</span>':''}</td>
+      <td>${c.region}</td>
+      <td class="num">${c.sales!==null? fmtInt(c.sales) : "—"}</td>
+      <td class="num">${c.share!==null? fmtPct(c.share) : "—"}</td>
+      <td class="num">${c.growth!==null? fmtSigned(c.growth) : "—"}</td>
+    </tr>`).join("");
+}
+
+function buildSegmentation(D){
+  new Chart(document.getElementById("chartPowertrain"), {
+    type:"doughnut",
+    data:{ labels: D.powertrain_mix.map(r=>r.name), datasets:[{
+      data: D.powertrain_mix.map(r=>r.pct), backgroundColor:[COLORS.charge, COLORS.amber], borderWidth:0
+    }]},
+    options:{ responsive:true, maintainAspectRatio:false, cutout:"62%",
+      plugins:{ legend:{position:"bottom", labels:{boxWidth:10, font:{size:11}}},
+        tooltip:{callbacks:{label:(c)=>` ${c.label}: ${c.parsed}%`}} } }
+  });
+  new Chart(document.getElementById("chartOrigin"), {
+    type:"doughnut",
+    data:{ labels: D.manufacturer_origin.map(r=>r.name), datasets:[{
+      data: D.manufacturer_origin.map(r=>r.pct),
+      backgroundColor:[COLORS.coral, COLORS.petrol, COLORS.navy, COLORS.grey], borderWidth:0
+    }]},
+    options:{ responsive:true, maintainAspectRatio:false, cutout:"62%",
+      plugins:{ legend:{position:"bottom", labels:{boxWidth:10, font:{size:10}}},
+        tooltip:{callbacks:{label:(c)=>` ${c.label}: ${c.parsed}%`}} } }
+  });
+  new Chart(document.getElementById("chartRegionSplit"), {
+    type:"doughnut",
+    data:{ labels: D.region_sales_distribution.map(r=>r.region), datasets:[{
+      data: D.region_sales_distribution.map(r=>r.sales_million),
+      backgroundColor:[COLORS.coral,COLORS.petrol,COLORS.amber,COLORS.charge,"#8E7CC3",COLORS.navy,"#5FA9B4","#C9A66B","#B9C2C9","#DDD"],
+      borderWidth:0
+    }]},
+    options:{ responsive:true, maintainAspectRatio:false, cutout:"58%",
+      plugins:{ legend:{display:false},
+        tooltip:{callbacks:{label:(c)=>` ${c.label}: ${c.parsed}M units`}} } }
+  });
+  const regionColors = [COLORS.coral,COLORS.petrol,COLORS.amber,COLORS.charge,"#8E7CC3",COLORS.navy,"#5FA9B4","#C9A66B","#B9C2C9","#DDD"];
+  const regionTotal = D.region_sales_distribution.reduce((s,r)=>s+r.sales_million, 0);
+  document.getElementById("region-split-legend").innerHTML = D.region_sales_distribution.map((r,i)=>
+    `<span class="swatch-item"><span class="dot" style="background:${regionColors[i]}"></span>${r.region} — ${Math.round(r.sales_million/regionTotal*100)}%</span>`
+  ).join("");
+  document.getElementById("segmentation-note").textContent =
+    "* " + D.region_sales_note + " Manufacturer-origin \"Other\" share is likewise a residual not itemised by the report.";
+}
+
+function buildTrend(D){
+  const data = D.historical_trend;
+  const years = data.map(r=>r.year);
+  const sales = data.map(r=>r.sales_million);
+  const share = data.map(r=>r.share_pct);
+  const isForecast = data.map(r=>r.is_forecast);
+
+  new Chart(document.getElementById("chartTrendSales"), {
+    type:"line",
+    data:{ labels:years, datasets:[{
+      label:"Million units sold", data:sales,
+      borderColor: COLORS.petrol, backgroundColor:"rgba(11,110,127,0.08)",
+      fill:true, tension:0.35, pointRadius:4,
+      pointBackgroundColor: sales.map((v,i)=> isForecast[i]? COLORS.amber : COLORS.petrol),
+      segment:{ borderDash: ctx => isForecast[ctx.p1DataIndex] ? [6,4] : undefined }
+    }]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:(c)=>" "+c.parsed.y+"M units"}} },
+      scales:{ y:{ title:{display:true,text:"Million units"}, grid:{color:"#EEF1F3"} }, x:{ grid:{display:false} } }
+    }
+  });
+  new Chart(document.getElementById("chartTrendShare"), {
+    type:"bar",
+    data:{ labels:years, datasets:[{
+      label:"Sales share (%)", data:share,
+      backgroundColor: share.map((v,i)=> isForecast[i] ? COLORS.amber : COLORS.charge),
+      borderRadius:5, maxBarThickness:34
+    }]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:(c)=>" "+c.parsed.y+"% of all new cars"}} },
+      scales:{ y:{ title:{display:true,text:"% of total car sales"}, grid:{color:"#EEF1F3"} }, x:{ grid:{display:false} } }
+    }
+  });
+}
+
+function buildManufacturing(D){
+  new Chart(document.getElementById("chartProduction"), {
+    type:"doughnut",
+    data:{ labels: D.manufacturing.map(r=>r.name), datasets:[{
+      data: D.manufacturing.map(r=>r.pct), backgroundColor:[COLORS.coral, COLORS.grey], borderWidth:0
+    }]},
+    options:{ responsive:true, maintainAspectRatio:false, cutout:"62%",
+      plugins:{ legend:{position:"bottom"}, tooltip:{callbacks:{label:(c)=>` ${c.label}: ${c.parsed}%`}} } }
+  });
+  document.getElementById("trade-facts").innerHTML = D.trade_facts.map(({metric,value})=>
+    `<li><span class="fl">${metric}</span><span class="fv">${typeof value==="number"? fmtInt(value): value}</span></li>`
+  ).join("");
+}
+
+function buildBattery(D){
+  new Chart(document.getElementById("chartBattery"), {
+    type:"doughnut",
+    data:{ labels: D.battery_share.map(r=>r.name), datasets:[{
+      data: D.battery_share.map(r=>r.pct), backgroundColor:[COLORS.navy, COLORS.petrolLight], borderWidth:0
+    }]},
+    options:{ responsive:true, maintainAspectRatio:false, cutout:"62%",
+      plugins:{ legend:{position:"bottom"}, tooltip:{callbacks:{label:(c)=>` ${c.label}: ${c.parsed}%`}} } }
+  });
+}
+
+function buildCharging(D){
+  const rows = D.charging_by_country;
+  new Chart(document.getElementById("chartCharging"), {
+    type:"bar",
+    data:{ labels: rows.map(r=>r.name), datasets:[{
+      label:"Public charging points",
+      data: rows.map(r=>r.points),
+      backgroundColor: rows.map(r=> r.name==="China" ? COLORS.coral : COLORS.petrol),
+      borderRadius:4, maxBarThickness:22
+    }]},
+    options:{ indexAxis:"y", responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:(ctx)=> " "+fmtInt(ctx.parsed.x)+" points"}} },
+      scales:{ x:{ ticks:{ callback:(v)=> fmtUnits(v) }, grid:{color:"#EEF1F3"} }, y:{ grid:{display:false} } }
+    }
+  });
+
+  document.getElementById("charging-facts").innerHTML = D.charging_global_facts.map(({metric,value,note})=>
+    `<li><span class="fl">${metric}<span class="fn">${note||""}</span></span><span class="fv">${value}</span></li>`
+  ).join("");
+
+  const ratios = D.ev_per_charger;
+  new Chart(document.getElementById("chartEvPerCharger"), {
+    type:"bar",
+    data:{ labels: ratios.map(r=>r.name), datasets:[{
+      label:"EVs per charging point",
+      data: ratios.map(r=>r.ratio),
+      backgroundColor: COLORS.amber, borderRadius:4, maxBarThickness:34
+    }]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:(c)=>` ${c.parsed.y} EVs per charging point`}} },
+      scales:{ y:{ title:{display:true,text:"EVs per charging point"}, grid:{color:"#EEF1F3"} }, x:{ grid:{display:false} } }
+    }
+  });
+
+  document.getElementById("charging-note").textContent = D.charging_note;
+}
+
+function buildAffordability(D){
+  new Chart(document.getElementById("chartAffordability"), {
+    type:"bar",
+    data:{ labels: D.running_cost_savings.map(r=>r.market), datasets:[{
+      label:"Annual saving (USD)",
+      data: D.running_cost_savings.map(r=>r.saving_usd),
+      backgroundColor: COLORS.charge, borderRadius:4, maxBarThickness:40
+    }]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:(c)=>" $"+fmtInt(c.parsed.y)+"/year"}} },
+      scales:{ y:{ title:{display:true,text:"USD / year"}, grid:{color:"#EEF1F3"}, ticks:{callback:(v)=>"$"+fmtInt(v)} }, x:{ grid:{display:false} } }
+    }
+  });
+
+  document.getElementById("affordability-facts").innerHTML = D.affordability_facts.map(({metric,value,note})=>
+    `<li><span class="fl">${metric}<span class="fn">${note||""}</span></span><span class="fv">${value}</span></li>`
+  ).join("");
+}
+
+function buildForecast(D){
+  const data = D.outlook_2035;
+  new Chart(document.getElementById("chartForecast"), {
+    type:"bar",
+    data:{ labels: data.map(r=>r.market), datasets:[
+        { label:"2025", data:data.map(r=>r.v0), backgroundColor: COLORS.petrolLight, borderRadius:4, maxBarThickness:26 },
+        { label:"2035 (forecast)", data:data.map(r=>r.v1), backgroundColor: COLORS.charge, borderRadius:4, maxBarThickness:26 }
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{position:"bottom"}, tooltip:{callbacks:{label:(c)=>` ${c.dataset.label}: ${c.parsed.y}%`}} },
+      scales:{ y:{ title:{display:true,text:"Sales share (%)"}, grid:{color:"#EEF1F3"}, suggestedMax:100 }, x:{ grid:{display:false} } }
+    }
+  });
+}
+
+function buildImpact(D){
+  document.getElementById("impact-facts").innerHTML = D.oil_electricity.map(({metric,value,note})=>
+    `<li><span class="fl">${metric}<span class="fn">${note||""}</span></span><span class="fv">${typeof value==="number"? value.toLocaleString("en-US") : value}</span></li>`
+  ).join("");
+}
+
+function buildBeyond(D){
+  document.getElementById("beyond-facts").innerHTML = D.trucks_2w.map(({metric,value,note})=>
+    `<li><span class="fl">${metric}<span class="fn">${note||""}</span></span><span class="fv">${typeof value==="number"? value.toLocaleString("en-US") : value}</span></li>`
+  ).join("");
+}
+
+function buildRecycling(D){
+  const eol = D.eol_battery_volume;
+  new Chart(document.getElementById("chartEol"), {
+    type:"line",
+    data:{ labels: eol.map(r=>r.year), datasets:[{
+      label:"EOL battery availability (GWh)",
+      data: eol.map(r=>r.gwh),
+      borderColor: COLORS.coral, backgroundColor:"rgba(217,99,75,0.1)",
+      fill:true, tension:0.3, pointRadius:5, pointBackgroundColor: COLORS.coral
+    }]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:(c)=>" "+fmtInt(c.parsed.y)+" GWh"}} },
+      scales:{ y:{ title:{display:true,text:"GWh"}, grid:{color:"#EEF1F3"} }, x:{ grid:{display:false} } }
+    }
+  });
+
+  document.getElementById("recycling-facts").innerHTML = D.battery_recycling_facts.map(({metric,value,note})=>
+    `<li><span class="fl">${metric}<span class="fn">${note||""}</span></span><span class="fv">${value}</span></li>`
+  ).join("");
+
+  const content = D.eu_recycled_content_targets;
+  new Chart(document.getElementById("chartEuContent"), {
+    type:"bar",
+    data:{ labels: content.map(r=>r.metal), datasets:[
+      { label:"From 2031", data: content.map(r=>r.target_2031), backgroundColor: COLORS.petrolLight, borderRadius:4, maxBarThickness:26 },
+      { label:"From 2036", data: content.map(r=>r.target_2036), backgroundColor: COLORS.navy, borderRadius:4, maxBarThickness:26 }
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{position:"bottom"}, tooltip:{callbacks:{label:(c)=>` ${c.dataset.label}: ${c.parsed.y}%`}} },
+      scales:{ y:{ title:{display:true,text:"Min. recycled content (%)"}, grid:{color:"#EEF1F3"} }, x:{ grid:{display:false} } }
+    }
+  });
+
+  const recovery = D.eu_material_recovery_targets;
+  new Chart(document.getElementById("chartEuRecovery"), {
+    type:"bar",
+    data:{ labels: recovery.map(r=>r.material), datasets:[
+      { label:"By end-2027", data: recovery.map(r=>r.target_2027), backgroundColor: COLORS.charge, borderRadius:4, maxBarThickness:26 },
+      { label:"By end-2031", data: recovery.map(r=>r.target_2031), backgroundColor: COLORS.amber, borderRadius:4, maxBarThickness:26 }
+    ]},
+    options:{ indexAxis:"y", responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{position:"bottom"}, tooltip:{callbacks:{label:(c)=>` ${c.dataset.label}: ${c.parsed.x}%`}} },
+      scales:{ x:{ title:{display:true,text:"Material recovery target (%)"}, grid:{color:"#EEF1F3"} }, y:{ grid:{display:false} } }
+    }
+  });
+
+  document.getElementById("recycling-note").textContent = D.eol_volume_note + " " + D.eu_regulation_note;
+}
+
+function buildSources(D){
+  document.getElementById("sources-list").innerHTML = D.sources.map(({section,title,url})=>
+    `<li><span class="fl">${section}<span class="fn">${title}</span></span><a class="fv" style="font-family:'Inter',sans-serif;font-weight:500;font-size:12.5px;" href="${url}" target="_blank" rel="noopener">Open ↗</a></li>`
+  ).join("");
+  const recEl = document.getElementById("recycling-sources-list");
+  if(recEl && D.recycling_sources){
+    recEl.innerHTML = D.recycling_sources.map(({section,title,url})=>
+      `<li><span class="fl">${section}<span class="fn">${title}</span></span><a class="fv" style="font-family:'Inter',sans-serif;font-weight:500;font-size:12.5px;" href="${url}" target="_blank" rel="noopener">Open ↗</a></li>`
+    ).join("");
+  }
+}
+
+/* ================= INTERACTIVE WORLD MAP (D3 + world-atlas TopoJSON) ================= */
+let currentMetric = "share";
+let worldFeatures = null;
+let countryByIso = {};
+let mapZoomBehavior = null;
+
+const METRIC_CONF = {
+  share:  { label:"2025 sales share",  key:"share",  scale:[0,60],       colors:["#EAF3EF","#0B6E7F","#08343B"], unit:"%" },
+  sales:  { label:"2025 sales volume", key:"sales",  scale:[0,13000000], colors:["#F5EFE3","#E2A63D","#7A4E14"], unit:"units" },
+  growth: { label:"YoY sales growth",  key:"growth", scale:[-30,130],    colors:["#F3E7E4","#D9634B","#7A2A1B"], unit:"%" },
+};
+
+function buildWorldMap(D){
+  countryByIso = {};
+  D.countries.forEach(c=>{ if(c.iso) countryByIso[String(parseInt(c.iso,10))] = c; });
+
+  document.querySelectorAll(".map-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      document.querySelectorAll(".map-btn").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      currentMetric = btn.dataset.metric;
+      if(worldFeatures) renderMap();
+    });
+  });
+
+  fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json")
+    .then(r=>{ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
+    .then(topo=>{
+      worldFeatures = topojson.feature(topo, topo.objects.countries).features;
+      document.getElementById("map-loading").classList.add("hidden");
+      document.getElementById("map-box").style.display = "block";
+      renderMap();
+    })
+    .catch(err=>{
+      console.warn("World map unavailable:", err);
+      document.getElementById("map-loading").classList.add("hidden");
+      document.getElementById("map-error").classList.remove("hidden");
+    });
+}
+
+function colorScale(value, conf){
+  if(value===null||value===undefined) return "#EDF0F2";
+  const [lo,hi] = conf.scale;
+  const t = Math.max(0, Math.min(1, (value-lo)/(hi-lo)));
+  return d3.scaleLinear().domain([0,0.5,1]).range(conf.colors)(t);
+}
+
+function renderMap(){
+  const svg = d3.select("#worldmap-svg");
+  svg.selectAll("*").remove();
+  const conf = METRIC_CONF[currentMetric];
+  const projection = d3.geoNaturalEarth1().fitSize([960,480], {type:"FeatureCollection", features:worldFeatures});
+  const path = d3.geoPath(projection);
+  const tooltip = d3.select("#map-tooltip");
+
+  const g = svg.append("g");
+
+  g.selectAll("path")
+    .data(worldFeatures)
+    .join("path")
+    .attr("d", path)
+    .attr("class", d=>{
+      const c = countryByIso[String(parseInt(d.id,10))];
+      return "country-shape" + (c && c[conf.key]!==null && c[conf.key]!==undefined ? "" : " no-data");
+    })
+    .attr("fill", d=>{
+      const c = countryByIso[String(parseInt(d.id,10))];
+      return c ? colorScale(c[conf.key], conf) : "#EDF0F2";
+    })
+    .on("mousemove", function(event, d){
+      const c = countryByIso[String(parseInt(d.id,10))];
+      if(!c) return;
+      const box = document.getElementById("map-box").getBoundingClientRect();
+      tooltip.classed("hidden", false)
+        .style("left", (event.clientX - box.left + 14) + "px")
+        .style("top", (event.clientY - box.top + 10) + "px")
+        .html(`<b>${c.country}</b>
+          <div class="tt-row"><span>Sales share</span><b>${c.share!==null? c.share.toFixed(1)+'%':'—'}</b></div>
+          <div class="tt-row"><span>2025 sales</span><b>${c.sales!==null? fmtUnits(c.sales):'—'}</b></div>
+          <div class="tt-row"><span>YoY growth</span><b>${c.growth!==null? (c.growth>0?'+':'')+c.growth+'%':'—'}</b></div>`);
+    })
+    .on("mouseleave", ()=> tooltip.classed("hidden", true));
+
+  // Zoom & pan
+  mapZoomBehavior = d3.zoom()
+    .scaleExtent([1, 8])
+    .translateExtent([[0,0],[960,480]])
+    .on("zoom", (event)=>{ g.attr("transform", event.transform); });
+  svg.call(mapZoomBehavior).on("dblclick.zoom", null);
+
+  renderLegend(conf);
+}
+
+function renderLegend(conf){
+  const gradient = `linear-gradient(to right, ${conf.colors.join(",")})`;
+  const fmtTick = (v)=> conf.unit==="units" ? fmtUnits(v) : (v>0 && conf.key==="growth" ? "+"+v : v)+"%";
+  document.getElementById("map-legend").innerHTML = `
+    <span>${conf.label}</span>
+    <span>${fmtTick(conf.scale[0])}</span>
+    <div class="gradient-bar" style="background:${gradient}"></div>
+    <span>${fmtTick(conf.scale[1])}</span>
+    <span style="display:inline-flex;align-items:center;gap:5px;">
+      <span style="width:10px;height:10px;background:#EDF0F2;border-radius:2px;display:inline-block;"></span>No data
+    </span>
+    <div class="map-zoom-controls">
+      <button class="zoom-btn" id="zoom-in" type="button">+</button>
+      <button class="zoom-btn" id="zoom-out" type="button">−</button>
+      <button class="zoom-btn" id="zoom-reset" type="button">Reset</button>
+    </div>`;
+
+  const svg = d3.select("#worldmap-svg");
+  document.getElementById("zoom-in").addEventListener("click", ()=> svg.transition().duration(200).call(mapZoomBehavior.scaleBy, 1.5));
+  document.getElementById("zoom-out").addEventListener("click", ()=> svg.transition().duration(200).call(mapZoomBehavior.scaleBy, 1/1.5));
+  document.getElementById("zoom-reset").addEventListener("click", ()=> svg.transition().duration(300).call(mapZoomBehavior.transform, d3.zoomIdentity));
+}
+
+init();
+</script>
+</body>
+</html>

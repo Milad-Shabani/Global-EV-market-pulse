@@ -1,0 +1,50 @@
+name: Build & validate workbook
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "data/**"
+      - "requirements.txt"
+  pull_request:
+    paths:
+      - "data/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate workbook
+        working-directory: data
+        run: python generate_workbook.py
+
+      - name: Verify workbook opens cleanly with openpyxl
+        working-directory: data
+        run: |
+          python - <<'PY'
+          import openpyxl
+          wb = openpyxl.load_workbook("EV_Global_Outlook_2026.xlsx")
+          expected = {"Overview", "Country_Leaderboard", "Historical_Trend",
+                      "Manufacturing_Trade", "Battery_Supply_Chain", "Forecast_2035",
+                      "Oil_Electricity_Impact", "Trucks_Buses_2W3W", "Sources"}
+          missing = expected - set(wb.sheetnames)
+          assert not missing, f"Missing sheets: {missing}"
+          print("OK — all expected sheets present:", wb.sheetnames)
+          PY
+
+      - name: Upload workbook as build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: EV_Global_Outlook_2026
+          path: data/EV_Global_Outlook_2026.xlsx
