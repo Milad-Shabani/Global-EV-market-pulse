@@ -9,6 +9,9 @@ scenarios say happens by 2035 — built entirely on real, cited figures from the
 [Download the Excel workbook](dashboard/data/EV_Global_Outlook_2026.xlsx)
 
 ![Dashboard preview](docs/screenshots/dashboard-preview.png)
+<img width="1384" height="721" alt="Screenshot 2026-09-13 135043" src="https://github.com/user-attachments/assets/65cade51-a3c5-4da2-99b3-e6536e7d93bf" />
+<img width="1134" height="664" alt="MAP" src="https://github.com/user-attachments/assets/e4f0dc8c-854d-4421-a849-90e5bbb4e41e" />
+
 *Preview render of the dashboard's hero, KPI band, country leaderboard, market-segmentation,
 sales-trend and battery-recycling panels — generated from the same underlying data as the live
 page (`docs/screenshots/make_preview.py`). The live dashboard also has an interactive world map,
