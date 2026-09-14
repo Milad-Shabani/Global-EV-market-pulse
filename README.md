@@ -132,6 +132,7 @@ open index.html            # macOS
 > page instead, take a real browser screenshot after your first GitHub Pages deploy and
 > overwrite that file.
 
+
 ## Publishing to GitHub
 
 Ready-to-run scripts and a GitHub Actions workflow are included:
