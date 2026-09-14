@@ -66,7 +66,7 @@ zero drift.
 > The **Battery Recycling & Second-Life** sheet/section is the one exception: the IEA report's own
 > recycling chapter (Ch. 9, p.223) wasn't fully retrievable from the source used to build this
 > project, so that section instead cites S&P Global Mobility, Circular Energy Storage, and the
-> EU's Battery Regulation (2023/1542) directly — see its own note and the Sources sheet.
+> EU's Battery Regulation (2023/1542) directly — see its own note and the Sources sheet..
 
 
 ## Task brief (the one I set myself)
