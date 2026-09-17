@@ -19,10 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-Note: this license covers the code in this repository only. The underlying
-electric-vehicle data is (c) IEA, Global EV Outlook 2026, used under the terms
-of CC BY 4.0 (https://www.iea.org/terms/creative-commons-cc-licenses). Please
-retain the citation to the IEA if you reuse the data.
