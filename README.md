@@ -6,6 +6,7 @@ scenarios say happens by 2035 — built entirely on real, cited figures from the
 **[IEA Global EV Outlook 2026](https://www.iea.org/reports/global-ev-outlook-2026)**.
 
 **[▶ Live dashboard](https://Milad-Shabani.github.io/global-ev-market-pulse/)** ·
+
 [Download the Excel workbook](dashboard/data/EV_Global_Outlook_2026.xlsx)
 
 ![Dashboard preview](docs/screenshots/dashboard-preview.png)
