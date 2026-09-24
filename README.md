@@ -136,21 +136,16 @@ open index.html            # macOS
 
 ## Publishing to GitHub
 
-Ready-to-run scripts and a GitHub Actions workflow are included:
+A ready-to-run script and a GitHub Actions workflow are included:
 
 ```bash
 ./publish.sh   # macOS/Linux — initialises git, commits, and pushes to your GitHub repo
 ```
 
-```bat
-publish.bat    :: Windows — same thing, double-click to run
-```
+It requires [git](https://git-scm.com/) and the [GitHub CLI](https://cli.github.com/) (`gh`,
+logged in via `gh auth login`).
 
-Both require [git](https://git-scm.com/) and the [GitHub CLI](https://cli.github.com/) (`gh`,
-logged in via `gh auth login`). Edit the `cd` line at the top of whichever script you use if your
-local folder isn't at the default path assumed inside it.
-
-See [`publish.sh`](publish.sh) / [`publish.bat`](publish.bat) for the exact steps, and
+See [`publish.sh`](publish.sh) for the exact steps, and
 [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml) for the
 auto-deploy-to-GitHub-Pages workflow (enable **Settings → Pages → Source: GitHub Actions**
 once, after your first push).
