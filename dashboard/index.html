@@ -11,6 +11,10 @@
 <meta property="og:description" content="Who's actually winning the global EV race — country-by-country sales, production, battery supply chains and the road to 2035, built on the IEA Global EV Outlook 2026.">
 <meta property="og:image" content="docs/screenshots/dashboard-preview.png">
 <meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://milad-shabani.github.io/Global-EV-market-pulse/">
+<link rel="alternate" hreflang="en" href="https://milad-shabani.github.io/Global-EV-market-pulse/">
+<link rel="alternate" hreflang="fa" href="https://milad-shabani.github.io/Global-EV-market-pulse/fa/">
+<link rel="alternate" hreflang="x-default" href="https://milad-shabani.github.io/Global-EV-market-pulse/">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
@@ -216,6 +220,12 @@
   }
   .zoom-btn:hover{color:var(--navy);border-color:var(--petrol);}
   .map-hint{text-align:center;font-size:11px;color:var(--grey);margin-top:8px;}
+
+  /* ---------- Language switch ---------- */
+  .topbar .wrap{gap:14px;}
+  nav.tabs{min-width:0;}
+  .lang-switch{display:inline-block;margin-bottom:16px;font-size:12.5px;font-weight:600;color:var(--petrol-dark);text-decoration:none;border:1px solid var(--line);border-radius:7px;padding:6px 11px;}
+  .lang-switch:hover{background:var(--panel);}
 </style>
 </head>
 <body>
@@ -246,6 +256,7 @@
 
 <header class="hero">
   <div class="wrap">
+    <a class="lang-switch" href="fa/" hreflang="fa" lang="fa" dir="rtl">نسخهٔ فارسی</a>
     <div class="eyebrow">World electric-vehicle intelligence — 2026 edition</div>
     <h1>Which countries are actually winning the EV race — and by how much.</h1>
     <p class="lede">A world-level view of electric-car production, sales, trade flows, battery supply chains
@@ -629,7 +640,7 @@
       <div class="maker-info">
         <div class="maker-name">Milad Shabani</div>
         <div class="maker-role">BI Engineer building data &amp; analytics portfolio projects with Power BI, SQL Server and Python.</div>
-        <a class="maker-link" href="https://miladshabani.ir//" target="_blank" rel="noopener">miladshabani.ir/</a>
+        <a class="maker-link" href="https://miladshabani.ir/" target="_blank" rel="noopener">miladshabani.ir/</a>
       </div>
     </div>
 
